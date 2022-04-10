@@ -3,31 +3,40 @@ package main
 import "testing"
 
 func TestHello(t *testing.T) {
-	t.Run("say hello to people with name", func(t *testing.T) {
-		got := Hello("Chris")
-		want := "Hello, Chris"
+	runName := "say hello to people with name"
+	t.Run(runName, testNameHello)
 
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
-		}
-	})
+	runName = "say hello to world without name"
+	t.Run(runName, checkEmptyName)
+}
 
-	t.Run("say hello to people with name", func(t *testing.T) {
-		got := Hello("David")
-		want := "Hello, David"
+func testNameHello(t *testing.T) {
+	nameList := []string{"Chris", "David"}
+	checkAllNameList(t, nameList)
+}
 
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
-		}
-	})
+func checkAllNameList(t *testing.T, nameList []string) {
+	for _, personName := range nameList {
+		checkPersonName(t, personName)
+	}
+}
 
-	t.Run("say hello to people with name", func(t *testing.T) {
-		got := Hello("")
-		want := "Hello, World"
+func checkPersonName(t *testing.T, personName string) {
+	got := Hello(personName)
+	want := "Hello, " + personName
 
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
-		}
-	})
+	assertCorrectMessage(t, want, got)
+}
 
+func checkEmptyName(t *testing.T) {
+	got := Hello("")
+	want := "Hello, World"
+
+	assertCorrectMessage(t, want, got)
+}
+
+func assertCorrectMessage(t *testing.T, want string, got string) {
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
 }
