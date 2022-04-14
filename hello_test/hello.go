@@ -12,6 +12,6 @@ func Hello(name string) string {
 	return prefixHello + name
 }
 
-func main() {
+func hellotest() { // main
 	fmt.Println(Hello(""))
 }
