@@ -5,23 +5,20 @@ import (
 )
 
 func TestShowDataBase(t *testing.T) {
-	fakedb := initFakeDB()
-	got := fakedb.Query("show database")
 
+	got := initDBAndSendQuery("show database")
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "[]",
 		CurDB:     "",
 		LenDBList: 0,
 	}
-
 	checkDBMessage(t, got, want)
 }
 
 func TestCreateDataBase(t *testing.T) {
-	fakedb := initFakeDB()
-	got := fakedb.Query("CREATE DATABASE FakeDB")
 
+	got := initDBAndSendQuery("CREATE DATABASE FakeDB")
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "[FakeDB]",
@@ -32,13 +29,12 @@ func TestCreateDataBase(t *testing.T) {
 }
 
 func TestCreateManyDataBases(t *testing.T) {
-	fakedb := initFakeDB()
 	fakedbNameList := []string{"A", "B", "C", "D", "E"}
-	fakedbNameListString, got := createManyDataBases(&fakedb, fakedbNameList)
+	got := createManyDataBases(fakedbNameList)
 
 	want := DBMessage{
 		Error:     "None",
-		Terminal:  fakedbNameListString,
+		Terminal:  ConvertListToString(fakedbNameList),
 		CurDB:     "",
 		LenDBList: len(fakedbNameList),
 	}
@@ -46,66 +42,101 @@ func TestCreateManyDataBases(t *testing.T) {
 }
 
 func TestUseDataBase(t *testing.T) {
-	fakedb := initFakeDB()
 	fakedbName := "FakeDB"
-	fakedb.Query("CREATE DATABASE " + fakedbName)
-	got := fakedb.Query("use " + fakedbName)
+	got := initDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"use "+fakedbName,
+	)
 
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "Database changed",
-		CurDB:     fakedbName,
+		CurDB:     DBName(fakedbName),
 		LenDBList: 1,
 	}
 	checkDBMessage(t, got, want)
 }
 
 func TestCreateTable(t *testing.T) {
-	fakedb := initFakeDB()
 	fakedbName := "FakeDB"
-	fakedb.Query("CREATE DATABASE " + fakedbName)
-	fakedb.Query("use " + fakedbName)
-
 	tableName := "TableA"
-	tableColumns := "(name string, score int)"
-	got := fakedb.Query("CREATE TABLE " + tableName + " " + tableColumns)
+	tableColumns := "(name string, score string)"
+
+	got := initDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"use "+fakedbName,
+		"CREATE TABLE "+tableName+" "+tableColumns,
+	)
 
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "Table is Created",
-		CurDB:     fakedbName,
+		CurDB:     DBName(fakedbName),
 		LenDBList: 1,
-		CurTable:  tableName,
+		CurTable:  TBName(tableName),
 		lenTable:  0,
-		Columns:   "|name string|score int|",
+		Columns:   "|name string|score string|",
 	}
 	checkDBMessage(t, got, want)
 }
 
-func initFakeDB() MySQL {
-	fakedb := MySQL{}
+func TestInsertInto(t *testing.T) {
+	fakedbName := "FakeDB"
+	tableName := "TableA"
+	tableColumns := "(name string, score string)"
+	content := "('Jhon', 316)"
+
+	got := initDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"use "+fakedbName,
+		"CREATE TABLE "+tableName+" "+tableColumns,
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content,
+	)
+
+	want := DBMessage{
+		Error:     "None",
+		Terminal:  content,
+		CurDB:     DBName(fakedbName),
+		LenDBList: 1,
+		CurTable:  TBName(tableName),
+		lenTable:  1,
+		Columns:   "|name string|score string|",
+	}
+	checkDBMessage(t, got, want)
+}
+
+func initFakeDB() FakeDB {
+	fakedb := FakeDB{}
 	fakedb.DBMsg.initDBMessage()
 
 	return fakedb
 }
 
-func createManyDataBases(fakedb *MySQL, fakedbNameList []string) (string, DBMessage) {
+func initDBAndSendQuery(querys ...string) DBMessage {
+	fakedb := initFakeDB()
+	var dbMsg DBMessage
+	for _, q := range querys {
+		dbMsg = fakedb.Query(q)
+	}
 
+	return dbMsg
+}
+
+func createManyDataBases(fakedbNameList []string) DBMessage {
+
+	fakedb := initFakeDB()
 	var db_msg DBMessage
 	for _, fakedbName := range fakedbNameList {
 		db_msg = fakedb.Query("CREATE DATABASE " + fakedbName)
 	}
 
-	fakedbNameListString := ConvertListToString(fakedbNameList)
-	return fakedbNameListString, db_msg
+	return db_msg
 }
 
 func checkDBMessage(t *testing.T, got DBMessage, want DBMessage) {
 	assertStringDifference(t, "Error", got.Error, want.Error)
 	assertStringDifference(t, "Terminal", got.Terminal, want.Terminal)
-	assertStringDifference(t, "CurDB", got.CurDB, want.CurDB)
 	assertStringDifference(t, "DBListString", got.DBListString, want.DBListString)
-	assertStringDifference(t, "CurTable", got.CurTable, want.CurTable)
 	assertStringDifference(t, "Columns", got.Columns, want.Columns)
 
 	assertintDifference(t, "LenDBList", got.LenDBList, want.LenDBList)

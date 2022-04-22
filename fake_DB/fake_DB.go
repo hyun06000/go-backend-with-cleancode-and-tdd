@@ -2,97 +2,146 @@ package fakedb
 
 import "strings"
 
-type MySQL struct {
-	DBList    []string
-	CurrentDB string
-	TBList    map[string][]string
-	CurrentTB string
+type DBName string
+type TBName string
+type ColumnName string
+type Column struct {
+	Type        string
+	contentList []string
+}
+
+type Table map[ColumnName]Column
+type DataBase map[TBName]Table
+type MySQL map[DBName]DataBase
+
+type FakeDB struct {
+	CurrentDB DBName
+	MySQL     MySQL
 	DBMsg     DBMessage
 }
 
-type Table struct {
-	Name    string
-	Content map[string]map[string]string
-}
+func (f *FakeDB) Query(query string) DBMessage {
+	f.initMySQL()
 
-type DBMessage struct {
-	Error        string
-	Terminal     string
-	CurDB        string
-	DBListString string
-	LenDBList    int
-	CurTable     string
-	lenTable     int
-	Columns      string
-}
+	if IsShowDataBase(query) {
+		f.DBMsg.Terminal = ConvertListToString(f.getDBList())
+		return f.DBMsg
 
-func (m *MySQL) Query(query string) DBMessage {
-	if query == "show database" {
-		m.DBMsg.Terminal = ConvertListToString(m.DBList)
-		return m.DBMsg
 	} else {
-		var parsed []string = strings.Split(query, " ")
-		if parsed[0] == "CREATE" {
-			if parsed[1] == "DATABASE" {
-				m.DBList = append(m.DBList, parsed[2])
+		if StartWith_CREATE(query) {
+			query = strings.TrimPrefix(query, "CREATE ")
 
-				m.DBMsg.Terminal = ConvertListToString(m.DBList)
-				m.DBMsg.LenDBList = len(m.DBList)
-			} else if parsed[1] == "TABLE" {
-				m.CurrentTB = parsed[2]
-				curTBList := m.TBList[m.CurrentDB]
-				curTBList = append(curTBList, m.CurrentTB)
+			if StartWith_DATABASE(query) {
+				query = strings.TrimPrefix(query, "DATABASE ")
 
-				m.DBMsg.Terminal = "Table is Created"
-				m.DBMsg.LenDBList = len(m.DBList)
-				m.DBMsg.CurTable = m.CurrentTB
-				m.DBMsg.lenTable = len(curTBList)
+				f.CurrentDB = DBName(query)
+				f.initDataBase()
 
-				start := strings.Index(query, "(")
-				end := strings.Index(query, ")")
-				cols := strings.Split(query[start+1:end], ", ")
-				cols_rtn := "|"
-				for _, col := range cols {
-					parsedCol := strings.Split(col, " ")
-					colName := parsedCol[0]
-					colType := parsedCol[1]
-					cols_rtn += colName + " " + colType + "|"
-				}
-				m.DBMsg.Columns = cols_rtn
-				m.DBMsg.lenTable = 0 //ToDo : max(Table index) + 1
+				DBList := f.getDBList()
+				f.DBMsg.Terminal = ConvertListToString(DBList)
+				f.DBMsg.LenDBList = len(DBList)
+
+			} else if StartWith_TABLE(query) {
+				query = strings.TrimPrefix(query, "TABLE ")
+
+				newTableNameString := GetSplitedWord(query, 0)
+				newTableName := TBName(newTableNameString)
+				f.initTable(newTableName)
+				table := f.MySQL[f.CurrentDB][newTableName]
+
+				colsString := TrimPreSuf(query, newTableNameString+" (", ")")
+				colsList := SplitWithCommaSpace(colsString)
+
+				lastColName := f.setColumnsAndTypes(table, colsList)
+				colNameList, typeLsit := f.getColumnAndTypeList(table)
+				columnsSpec := MergeWordList(colNameList, typeLsit, " ")
+
+				f.DBMsg.Terminal = "Table is Created"
+				f.DBMsg.LenDBList = len(f.MySQL)
+				f.DBMsg.CurTable = newTableName
+				f.DBMsg.lenTable = len(table[lastColName].contentList)
+				f.DBMsg.Columns = ConvertListToBarSplitedString(columnsSpec)
 			}
 
-		} else if parsed[0] == "use" {
-			m.CurrentDB = parsed[1]
+		} else if StartWith_use(query) {
+			query = strings.TrimPrefix(query, "use ")
+			f.CurrentDB = DBName(query)
 
-			m.DBMsg.Terminal = "Database changed"
-			m.DBMsg.CurDB = m.CurrentDB
-			m.DBMsg.LenDBList = len(m.DBList)
+			f.DBMsg.Terminal = "Database changed"
+			f.DBMsg.CurDB = f.CurrentDB
+			f.DBMsg.LenDBList = len(f.MySQL)
+
+		} else if StartWith_INSERT_INTO(query) {
+			query := strings.TrimPrefix(query, "INSERT INTO ")
+			qListWithoutPrefix := strings.Split(query, " VALUES ")
+
+			tBNameAndCols := qListWithoutPrefix[0]
+			tableName, colNameList := GetTBNameAndColNameList(tBNameAndCols)
+
+			contentString := strings.Trim(qListWithoutPrefix[1], "()")
+			contentList := SplitWithCommaSpace(contentString)
+
+			table := f.MySQL[f.CurrentDB][tableName]
+			for i, colName := range colNameList {
+				tbCol := table[colName]
+				tbCol.contentList = append(tbCol.contentList, contentList[i])
+			}
+
+			f.DBMsg.Terminal = "(" + contentString + ")"
+			f.DBMsg.CurTable = tableName
+			f.DBMsg.lenTable = len(table[colNameList[0]].contentList)
+
 		}
 	}
-	return m.DBMsg
+	return f.DBMsg
 }
 
-func (dbmsg *DBMessage) initDBMessage() {
-
-	dbmsg.Error = "None"
-	dbmsg.Terminal = ""
-	dbmsg.CurDB = ""
-	dbmsg.LenDBList = 0
-	dbmsg.CurTable = ""
-	dbmsg.lenTable = 0
-	dbmsg.Columns = ""
+func (f *FakeDB) initMySQL() {
+	if f.MySQL == nil {
+		f.MySQL = make(MySQL)
+	}
 }
 
-func ConvertListToString(NameList []string) string {
-	ListString := "["
-	for i, Name := range NameList {
-		ListString += Name
-		if i != len(NameList)-1 {
-			ListString += " "
+func (f *FakeDB) initDataBase() {
+	if f.MySQL[f.CurrentDB] == nil {
+		f.MySQL[f.CurrentDB] = make(DataBase)
+	}
+}
+
+func (f *FakeDB) initTable(newTableName TBName) {
+	if f.MySQL[f.CurrentDB][newTableName] == nil {
+		f.MySQL[f.CurrentDB][newTableName] = make(Table)
+	}
+}
+
+func (f *FakeDB) getDBList() []string {
+	DBList := []string{}
+	for key, _ := range f.MySQL {
+		DBList = append(DBList, string(key))
+	}
+	return DBList
+}
+
+func (f *FakeDB) getColumnAndTypeList(tb Table) ([]string, []string) {
+	ColumnNameList := []string{}
+	ColumnTypeList := []string{}
+	for colName, contents := range tb {
+		ColumnNameList = append(ColumnNameList, string(colName))
+		ColumnTypeList = append(ColumnTypeList, contents.Type)
+	}
+	return ColumnNameList, ColumnTypeList
+}
+
+func (f *FakeDB) setColumnsAndTypes(table Table, colsList []string) ColumnName {
+	var lastColumnName ColumnName
+	for _, colAndType := range colsList {
+		wordList := SplitWithWhiteSpace(colAndType)
+		lastColumnName = ColumnName(wordList[0])
+		colType := wordList[1]
+		table[lastColumnName] = Column{
+			Type:        colType,
+			contentList: []string{},
 		}
 	}
-	ListString += "]"
-
-	return ListString
+	return lastColumnName
 }
