@@ -6,7 +6,7 @@ import (
 
 func TestShowDataBase(t *testing.T) {
 
-	got := initDBAndSendQuery("show database")
+	got := initDBAndSendQuery("SHOW DATABASE")
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "[]",
@@ -46,7 +46,7 @@ func TestUseDataBase(t *testing.T) {
 	fakedbName := "FakeDB"
 	got := initDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
-		"use "+fakedbName,
+		"USE "+fakedbName,
 	)
 
 	want := DBMessage{
@@ -65,10 +65,11 @@ func TestCreateTable(t *testing.T) {
 
 	got := initDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
-		"use "+fakedbName,
+		"USE "+fakedbName,
 		"CREATE TABLE "+tableName+" "+tableColumns,
 	)
 
+	columns := convertAndSortTBColumns(tableColumns)
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "Table is Created",
@@ -76,7 +77,39 @@ func TestCreateTable(t *testing.T) {
 		LenDBList: 1,
 		CurTable:  TBName(tableName),
 		lenTable:  0,
-		Columns:   "|name string|score string|",
+		Columns:   columns,
+	}
+	checkDBMessage(t, got, want)
+}
+
+func TestShowTables(t *testing.T) {
+	fakedbName := "FakeDB"
+	tableNameList := []string{"TableA", "TableB", "TableC"}
+	tableColumns := []string{
+		"(name string, score string)",
+		"(foo string, bar string)",
+		"(hello string, db string)",
+	}
+
+	got := initDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"USE "+fakedbName,
+		"CREATE TABLE "+tableNameList[0]+" "+tableColumns[0],
+		"CREATE TABLE "+tableNameList[1]+" "+tableColumns[1],
+		"CREATE TABLE "+tableNameList[2]+" "+tableColumns[2],
+		"SHOW TABLES",
+	)
+
+	terminal := convertAndSortDBNameList(tableNameList)
+	columns := convertAndSortTBColumns(tableColumns[2])
+	want := DBMessage{
+		Error:     "None",
+		Terminal:  terminal,
+		CurDB:     DBName(fakedbName),
+		LenDBList: 1,
+		CurTable:  TBName("TableC"),
+		lenTable:  0,
+		Columns:   columns,
 	}
 	checkDBMessage(t, got, want)
 }

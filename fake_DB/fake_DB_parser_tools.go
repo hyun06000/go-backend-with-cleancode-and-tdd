@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-func IsShowDataBase(query string) bool {
-	return (query == "show database")
+func StartWith_SHOW(query string) bool {
+	return strings.HasPrefix(query, "SHOW")
 }
 
 func StartWith_CREATE(query string) bool {
 	return strings.HasPrefix(query, "CREATE")
 }
 
-func StartWith_use(query string) bool {
-	return strings.HasPrefix(query, "use")
+func StartWith_USE(query string) bool {
+	return strings.HasPrefix(query, "USE")
 }
 
 func StartWith_INSERT_INTO(query string) bool {
@@ -27,6 +27,10 @@ func StartWith_DATABASE(query string) bool {
 
 func StartWith_TABLE(query string) bool {
 	return strings.HasPrefix(query, "TABLE")
+}
+
+func StartWith_TABLES(query string) bool {
+	return strings.HasPrefix(query, "TABLES")
 }
 
 func Split(query string, spliter string) []string {
@@ -51,23 +55,6 @@ func MergeWordList(A []string, B []string, sep string) []string {
 	}
 
 	return rtn
-}
-
-func GetTBNameAndColNameList(query string) (TBName, []ColumnName) {
-	tbNameAndColNameList := strings.Split(query, "(")
-
-	tbName := TBName(tbNameAndColNameList[0])
-
-	colNames := strings.TrimSuffix(tbNameAndColNameList[1], ")")
-	colNameList := Split(colNames, ", ")
-
-	var rtnColNameList []ColumnName
-	for _, colName := range colNameList {
-		rtnColNameList = append(rtnColNameList, ColumnName(colName))
-	}
-
-	return tbName, rtnColNameList
-
 }
 
 type ConvertArgs struct {
