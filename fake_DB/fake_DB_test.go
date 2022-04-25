@@ -32,9 +32,10 @@ func TestCreateManyDataBases(t *testing.T) {
 	fakedbNameList := []string{"A", "B", "C", "D", "E"}
 	got := createManyDataBases(fakedbNameList)
 
+	terminal := convertAndSortDBNameList(fakedbNameList)
 	want := DBMessage{
 		Error:     "None",
-		Terminal:  ConvertListToString(fakedbNameList),
+		Terminal:  terminal,
 		CurDB:     "",
 		LenDBList: len(fakedbNameList),
 	}
@@ -93,6 +94,7 @@ func TestInsertInto(t *testing.T) {
 		"INSERT INTO "+tableName+tableColumns+" VALUES "+content,
 	)
 
+	columns := convertAndSortTBColumns(tableColumns)
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  content,
@@ -100,7 +102,7 @@ func TestInsertInto(t *testing.T) {
 		LenDBList: 1,
 		CurTable:  TBName(tableName),
 		lenTable:  1,
-		Columns:   "|name string|score string|",
+		Columns:   columns,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -153,4 +155,20 @@ func assertintDifference(t *testing.T, testName string, got int, want int) {
 	if got != want {
 		t.Errorf(testName+" : got %q want %q", got, want)
 	}
+}
+
+func convertAndSortDBNameList(DBNameList []string) string {
+	cvtArgs := GenConvertArgs("SquareBraket_WhiteSpace")
+	terminal := ConvertListToString(DBNameList, cvtArgs)
+	return terminal
+}
+
+func convertAndSortTBColumns(tableColumns string) string {
+	cvtArgs := GenConvertArgs("RoundBraket_CommaSpace")
+	tableColumnsList := ConvertStringToList(tableColumns, cvtArgs)
+
+	cvtArgs = GenConvertArgs("BarBar_Bar")
+	columns := ConvertListToString(tableColumnsList, cvtArgs)
+
+	return columns
 }

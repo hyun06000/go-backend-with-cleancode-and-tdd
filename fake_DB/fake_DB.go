@@ -1,18 +1,22 @@
 package fakedb
 
-import "strings"
+import (
+	"strings"
+)
 
 type DBName string
 type TBName string
 type ColumnName string
 type Column struct {
 	Type        string
-	contentList []string
+	contentList *[]string
 }
 
 type Table map[ColumnName]Column
 type DataBase map[TBName]Table
 type MySQL map[DBName]DataBase
+
+// FakeDB.MySQL[DBName][TBName][ColumnName].contentList[index]
 
 type FakeDB struct {
 	CurrentDB DBName
@@ -24,7 +28,8 @@ func (f *FakeDB) Query(query string) DBMessage {
 	f.initMySQL()
 
 	if IsShowDataBase(query) {
-		f.DBMsg.Terminal = ConvertListToString(f.getDBList())
+		cvtArgs := GenConvertArgs("SquareBraket_WhiteSpace")
+		f.DBMsg.Terminal = ConvertListToString(f.getDBList(), cvtArgs)
 		return f.DBMsg
 
 	} else {
@@ -38,7 +43,8 @@ func (f *FakeDB) Query(query string) DBMessage {
 				f.initDataBase()
 
 				DBList := f.getDBList()
-				f.DBMsg.Terminal = ConvertListToString(DBList)
+				cvtArgs := GenConvertArgs("SquareBraket_WhiteSpace")
+				f.DBMsg.Terminal = ConvertListToString(DBList, cvtArgs)
 				f.DBMsg.LenDBList = len(DBList)
 
 			} else if StartWith_TABLE(query) {
@@ -50,7 +56,7 @@ func (f *FakeDB) Query(query string) DBMessage {
 				table := f.MySQL[f.CurrentDB][newTableName]
 
 				colsString := TrimPreSuf(query, newTableNameString+" (", ")")
-				colsList := SplitWithCommaSpace(colsString)
+				colsList := Split(colsString, ", ")
 
 				lastColName := f.setColumnsAndTypes(table, colsList)
 				colNameList, typeLsit := f.getColumnAndTypeList(table)
@@ -59,8 +65,9 @@ func (f *FakeDB) Query(query string) DBMessage {
 				f.DBMsg.Terminal = "Table is Created"
 				f.DBMsg.LenDBList = len(f.MySQL)
 				f.DBMsg.CurTable = newTableName
-				f.DBMsg.lenTable = len(table[lastColName].contentList)
-				f.DBMsg.Columns = ConvertListToBarSplitedString(columnsSpec)
+				f.DBMsg.lenTable = len(*table[lastColName].contentList)
+				cvtArgs := GenConvertArgs("BarBar_Bar")
+				f.DBMsg.Columns = ConvertListToString(columnsSpec, cvtArgs)
 			}
 
 		} else if StartWith_use(query) {
@@ -79,17 +86,20 @@ func (f *FakeDB) Query(query string) DBMessage {
 			tableName, colNameList := GetTBNameAndColNameList(tBNameAndCols)
 
 			contentString := strings.Trim(qListWithoutPrefix[1], "()")
-			contentList := SplitWithCommaSpace(contentString)
+			contentList := Split(contentString, ", ")
 
 			table := f.MySQL[f.CurrentDB][tableName]
-			for i, colName := range colNameList {
-				tbCol := table[colName]
-				tbCol.contentList = append(tbCol.contentList, contentList[i])
+			var colName string
+			for i, colNameAndType := range colNameList {
+				colName = Split(string(colNameAndType), " ")[0]
+
+				tbCol := table[ColumnName(colName)]
+				*tbCol.contentList = append(*tbCol.contentList, contentList[i])
 			}
 
 			f.DBMsg.Terminal = "(" + contentString + ")"
 			f.DBMsg.CurTable = tableName
-			f.DBMsg.lenTable = len(table[colNameList[0]].contentList)
+			f.DBMsg.lenTable = len(*table[ColumnName(colName)].contentList)
 
 		}
 	}
@@ -135,12 +145,12 @@ func (f *FakeDB) getColumnAndTypeList(tb Table) ([]string, []string) {
 func (f *FakeDB) setColumnsAndTypes(table Table, colsList []string) ColumnName {
 	var lastColumnName ColumnName
 	for _, colAndType := range colsList {
-		wordList := SplitWithWhiteSpace(colAndType)
+		wordList := Split(colAndType, " ")
 		lastColumnName = ColumnName(wordList[0])
 		colType := wordList[1]
 		table[lastColumnName] = Column{
 			Type:        colType,
-			contentList: []string{},
+			contentList: &[]string{},
 		}
 	}
 	return lastColumnName
