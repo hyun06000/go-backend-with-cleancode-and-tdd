@@ -140,6 +140,42 @@ func TestInsertInto(t *testing.T) {
 	checkDBMessage(t, got, want)
 }
 
+func TestSelectAll(t *testing.T) {
+	fakedbName := "FakeDB"
+	tableName := "TableA"
+	tableColumns := "(name string, score string)"
+	content := []string{
+		"('A', 316)",
+		"('B', 165)",
+		"('C', 453)",
+	}
+
+	got := initDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"use "+fakedbName,
+		"CREATE TABLE "+tableName+" "+tableColumns,
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[0],
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[1],
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[2],
+		"SELECT * FROM TableA",
+	)
+
+	termial := "|columns|contents| \n"
+	termial += "|name|['A', 'B', 'C']| \n"
+	termial += "|score|[316, 165, 453]| \n"
+	columns := convertAndSortTBColumns(tableColumns)
+	want := DBMessage{
+		Error:     "None",
+		Terminal:  termial,
+		CurDB:     DBName(fakedbName),
+		LenDBList: 1,
+		CurTable:  TBName(tableName),
+		lenTable:  3,
+		Columns:   columns,
+	}
+	checkDBMessage(t, got, want)
+}
+
 func initFakeDB() FakeDB {
 	fakedb := FakeDB{}
 	fakedb.DBMsg.initDBMessage()

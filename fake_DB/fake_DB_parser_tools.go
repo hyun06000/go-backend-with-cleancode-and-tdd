@@ -21,6 +21,10 @@ func StartWith_INSERT_INTO(query string) bool {
 	return strings.HasPrefix(query, "INSERT")
 }
 
+func StartWith_SELECT(query string) bool {
+	return strings.HasPrefix(query, "SELECT")
+}
+
 func StartWith_DATABASE(query string) bool {
 	return strings.HasPrefix(query, "DATABASE")
 }
@@ -31,6 +35,10 @@ func StartWith_TABLE(query string) bool {
 
 func StartWith_TABLES(query string) bool {
 	return strings.HasPrefix(query, "TABLES")
+}
+
+func StartWith_ASTERISK(query string) bool {
+	return strings.HasPrefix(query, "*")
 }
 
 func Split(query string, spliter string) []string {

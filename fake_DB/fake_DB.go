@@ -35,6 +35,10 @@ func (f *FakeDB) Query(query string) DBMessage {
 
 	case StartWith_INSERT_INTO(query):
 		return INSERT_INTO(f, query)
+
+	case StartWith_SELECT(query):
+		return SELECT(f, query)
+
 	default:
 		return f.DBMsg
 	}
