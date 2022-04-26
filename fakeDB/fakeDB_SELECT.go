@@ -1,4 +1,4 @@
-package fakedb
+package fakeDB
 
 import (
 	"sort"

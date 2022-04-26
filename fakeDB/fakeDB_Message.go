@@ -1,4 +1,4 @@
-package fakedb
+package fakeDB
 
 type DBMessage struct {
 	Error        string

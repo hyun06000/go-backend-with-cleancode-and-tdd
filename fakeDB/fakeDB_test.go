@@ -1,4 +1,4 @@
-package fakedb
+package fakeDB
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 
 func TestShowDataBase(t *testing.T) {
 
-	got := initDBAndSendQuery("SHOW DATABASE")
+	got := InitDBAndSendQuery("SHOW DATABASE")
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "[]",
@@ -18,7 +18,7 @@ func TestShowDataBase(t *testing.T) {
 
 func TestCreateDataBase(t *testing.T) {
 
-	got := initDBAndSendQuery("CREATE DATABASE FakeDB")
+	got := InitDBAndSendQuery("CREATE DATABASE FakeDB")
 	want := DBMessage{
 		Error:     "None",
 		Terminal:  "[FakeDB]",
@@ -44,7 +44,7 @@ func TestCreateManyDataBases(t *testing.T) {
 
 func TestUseDataBase(t *testing.T) {
 	fakedbName := "FakeDB"
-	got := initDBAndSendQuery(
+	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
 		"USE "+fakedbName,
 	)
@@ -63,7 +63,7 @@ func TestCreateTable(t *testing.T) {
 	tableName := "TableA"
 	tableColumns := "(name string, score string)"
 
-	got := initDBAndSendQuery(
+	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
 		"USE "+fakedbName,
 		"CREATE TABLE "+tableName+" "+tableColumns,
@@ -91,7 +91,7 @@ func TestShowTables(t *testing.T) {
 		"(hello string, db string)",
 	}
 
-	got := initDBAndSendQuery(
+	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
 		"USE "+fakedbName,
 		"CREATE TABLE "+tableNameList[0]+" "+tableColumns[0],
@@ -120,9 +120,9 @@ func TestInsertInto(t *testing.T) {
 	tableColumns := "(name string, score string)"
 	content := "('Jhon', 316)"
 
-	got := initDBAndSendQuery(
+	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
-		"use "+fakedbName,
+		"USE "+fakedbName,
 		"CREATE TABLE "+tableName+" "+tableColumns,
 		"INSERT INTO "+tableName+tableColumns+" VALUES "+content,
 	)
@@ -150,9 +150,9 @@ func TestSelectAll(t *testing.T) {
 		"('C', 453)",
 	}
 
-	got := initDBAndSendQuery(
+	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
-		"use "+fakedbName,
+		"USE "+fakedbName,
 		"CREATE TABLE "+tableName+" "+tableColumns,
 		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[0],
 		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[1],
@@ -176,26 +176,9 @@ func TestSelectAll(t *testing.T) {
 	checkDBMessage(t, got, want)
 }
 
-func initFakeDB() FakeDB {
-	fakedb := FakeDB{}
-	fakedb.DBMsg.initDBMessage()
-
-	return fakedb
-}
-
-func initDBAndSendQuery(querys ...string) DBMessage {
-	fakedb := initFakeDB()
-	var dbMsg DBMessage
-	for _, q := range querys {
-		dbMsg = fakedb.Query(q)
-	}
-
-	return dbMsg
-}
-
 func createManyDataBases(fakedbNameList []string) DBMessage {
 
-	fakedb := initFakeDB()
+	fakedb := InitFakeDB()
 	var db_msg DBMessage
 	for _, fakedbName := range fakedbNameList {
 		db_msg = fakedb.Query("CREATE DATABASE " + fakedbName)

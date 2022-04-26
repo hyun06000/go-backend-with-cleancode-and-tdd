@@ -1,4 +1,4 @@
-package fakedb
+package fakeDB
 
 type DBName string
 type TBName string
@@ -48,4 +48,21 @@ func (f *FakeDB) initMySQL() {
 	if f.MySQL == nil {
 		f.MySQL = make(MySQL)
 	}
+}
+
+func InitDBAndSendQuery(querys ...string) DBMessage {
+	fakedb := InitFakeDB()
+	var dbMsg DBMessage
+	for _, q := range querys {
+		dbMsg = fakedb.Query(q)
+	}
+
+	return dbMsg
+}
+
+func InitFakeDB() FakeDB {
+	fakedb := FakeDB{}
+	fakedb.DBMsg.initDBMessage()
+
+	return fakedb
 }
