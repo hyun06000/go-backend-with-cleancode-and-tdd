@@ -4,4 +4,5 @@ go 1.17
 
 require (
     fakeDB v0.0.0
+    myhttp v0.0.0
 )
