@@ -60,6 +60,15 @@ func InitDBAndSendQuery(querys ...string) DBMessage {
 	return dbMsg
 }
 
+func SendQuery(fakedb *FakeDB, querys ...string) (*FakeDB, DBMessage) {
+	var dbMsg DBMessage
+	for _, q := range querys {
+		dbMsg = fakedb.Query(q)
+	}
+
+	return fakedb, dbMsg
+}
+
 func InitFakeDB() FakeDB {
 	fakedb := FakeDB{}
 	fakedb.DBMsg.initDBMessage()
