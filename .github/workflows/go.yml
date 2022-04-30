@@ -31,7 +31,7 @@ jobs:
       with:
         coverageCommand: |
           go get github.com/axw/gocov/gocov
-          gocov test ./... | gocov report
+          gocov test ${{github.workspace}}/... | gocov report
         debug: true
     
     
