@@ -38,7 +38,7 @@ jobs:
     - name: Install Gocov
       run: |
         go get github.com/axw/gocov/gocov
-        gocov test | gocov report
+        gocov test ./... | gocov report
         
     - name: Test & publish code coverage
       uses: paambaati/codeclimate-action@v3.0.0
