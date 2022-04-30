@@ -24,8 +24,10 @@ jobs:
     - name: Install Gocov
       run: go get github.com/axw/gocov/gocov
     
-    - name: Generate Report
-      run: gocov convert ./c.out | gocov report > coverage.json
+    - name: Convert Report
+      run: |
+        gocov convert ./c.out | gocov report > coverage.json
+        sed -i "s|github.com/hyun06000/go-backend-with-cleancode-and-tdd|.|g" c.out
 
     - name: Test & publish code coverage
       uses: paambaati/codeclimate-action@v3.0.0
