@@ -31,16 +31,15 @@ jobs:
         go-version: 1.17
 
     - name: Gotest
-      run: go test ./... -coverprofile=c.out
+      run: |
+        go test ./... -coverprofile=c.out
+        sed -i "s|github.com/hyun06000/go-backend-with-cleancode-and-tdd|.|g" c.out
     
     - name: Install Gocov
-      run: go get github.com/axw/gocov/gocov
-    
-    - name: Convert Report
       run: |
-        gocov convert ./c.out | gocov report > coverage.json
-        sed -i "s|github.com/hyun06000/go-backend-with-cleancode-and-tdd|.|g" c.out
-
+        go get github.com/axw/gocov/gocov
+        gocov test | gocov report
+        
     - name: Test & publish code coverage
       uses: paambaati/codeclimate-action@v3.0.0
       env:
