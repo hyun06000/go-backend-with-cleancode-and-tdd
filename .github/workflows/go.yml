@@ -28,7 +28,7 @@ jobs:
       run: go get github.com/axw/gocov/gocov
     
     - name: Generate Report
-      run: gocov convert ./cover.out | gocov report ./coverage.json
+      run: gocov convert ./cover.out | gocov report coverage.json
 
     - name: Test & publish code coverage
       uses: paambaati/codeclimate-action@v3.0.0
