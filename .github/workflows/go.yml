@@ -34,7 +34,9 @@ jobs:
       uses: paambaati/codeclimate-action@v3.0.0
       env:
         CC_TEST_REPORTER_ID: ad66eb9762f8b7fe194ead2bc63e93d1ed1d87d680feb0b114aa19bd2c7090bf
-      
+      with:
+        coverageCommand: go test ./...
+        debug: true
     
 
     
