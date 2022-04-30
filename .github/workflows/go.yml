@@ -31,8 +31,4 @@ jobs:
       uses: paambaati/codeclimate-action@v3.0.0
       env:
         CC_TEST_REPORTER_ID: e5e29749a794f106041f0506f9fe3e111f509769687802eaf94e46d075ad44f9
-      with:
-        coverageCommand: cc-reporter after-build --exit-code 0 --coverage-input-type gocov
-        debug: ture
-
-    
+      
