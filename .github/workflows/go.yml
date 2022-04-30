@@ -22,13 +22,13 @@ jobs:
       run: go build
     
     - name: Gotest
-      run: go test ./... -coverprofile=cover.out
+      run: go test ./... -coverprofile=c.out
     
     - name: Install Gocov
       run: go get github.com/axw/gocov/gocov
     
     - name: Generate Report
-      run: gocov convert ./cover.out | gocov report
+      run: gocov convert ./c.out | gocov report > coverage.json
 
     - name: Test & publish code coverage
       uses: paambaati/codeclimate-action@v3.0.0
