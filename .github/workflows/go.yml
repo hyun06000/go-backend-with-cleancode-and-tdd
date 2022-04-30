@@ -35,7 +35,7 @@ jobs:
       env:
         CC_TEST_REPORTER_ID: e5e29749a794f106041f0506f9fe3e111f509769687802eaf94e46d075ad44f9
       with:
-        coverageCommand: go test ./... -coverprofile=c.out
+        coverageCommand: `gocov convert ./c.out | gocov report > coverage.json`
         debug: true
     
 
