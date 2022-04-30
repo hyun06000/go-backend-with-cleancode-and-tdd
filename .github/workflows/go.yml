@@ -31,7 +31,7 @@ jobs:
       with:
         coverageCommand: |
           go get github.com/axw/gocov/gocov
-          gocov convert cover >> cover.gocov
+          gocov convert cover > cover.json
         debug: true
     
     
