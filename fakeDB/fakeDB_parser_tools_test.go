@@ -117,3 +117,12 @@ func TestMergeWordList(t *testing.T) {
 		assertStringDifference(t, "MergeWordList", got_val, want[i])
 	}
 }
+
+func TestStringQuotesCheck(t *testing.T) {
+	got := HasSingleQuotesPreSuf("'ABC'")
+	assertBoolDifference(t, got, true)
+
+	got = HasSingleQuotesPreSuf("ABC")
+	assertBoolDifference(t, got, false)
+
+}

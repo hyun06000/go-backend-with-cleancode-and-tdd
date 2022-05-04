@@ -19,9 +19,20 @@ func INSERT_INTO(f *FakeDB, query string) DBMessage {
 	var colName string
 	for i, colNameAndType := range colNameList {
 		colName = Split(string(colNameAndType), " ")[0]
+		colType := Split(string(colNameAndType), " ")[1]
 
 		tbCol := table[ColumnName(colName)]
-		*tbCol.contentList = append(*tbCol.contentList, contentList[i])
+		content := contentList[i]
+		if colType == "string" {
+			if HasSingleQuotesPreSuf(content) {
+				*tbCol.contentList = append(*tbCol.contentList, content)
+			} else {
+				f.DBMsg.Error = "Invalide Query ::: string querys must have single quotes"
+			}
+		} else {
+			*tbCol.contentList = append(*tbCol.contentList, content)
+		}
+
 	}
 
 	f.DBMsg.Terminal = "(" + contentString + ")"

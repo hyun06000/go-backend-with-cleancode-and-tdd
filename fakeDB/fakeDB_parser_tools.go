@@ -70,6 +70,14 @@ func MergeWordList(A []string, B []string, sep string) []string {
 	return rtn
 }
 
+func HasSingleQuotesPreSuf(s string) bool {
+	singleQuoute := "'"
+	pre := strings.HasPrefix(s, singleQuoute)
+	suf := strings.HasSuffix(s, singleQuoute)
+
+	return pre && suf
+}
+
 type ConvertArgs struct {
 	Pre    string
 	Suf    string
