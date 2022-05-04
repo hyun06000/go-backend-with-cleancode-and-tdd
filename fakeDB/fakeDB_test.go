@@ -8,10 +8,11 @@ func TestShowDataBase(t *testing.T) {
 
 	got := InitDBAndSendQuery("SHOW DATABASE")
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  "[]",
-		CurDB:     "",
-		LenDBList: 0,
+		Error:         "None",
+		Terminal:      "[]",
+		CurDB:         "",
+		LenDBList:     0,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -20,10 +21,11 @@ func TestCreateDataBase(t *testing.T) {
 
 	got := InitDBAndSendQuery("CREATE DATABASE FakeDB")
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  "[FakeDB]",
-		CurDB:     "",
-		LenDBList: 1,
+		Error:         "None",
+		Terminal:      "[FakeDB]",
+		CurDB:         "",
+		LenDBList:     1,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -34,10 +36,11 @@ func TestCreateManyDataBases(t *testing.T) {
 
 	terminal := convertAndSortDBNameList(fakedbNameList)
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  terminal,
-		CurDB:     "",
-		LenDBList: len(fakedbNameList),
+		Error:         "None",
+		Terminal:      terminal,
+		CurDB:         "",
+		LenDBList:     len(fakedbNameList),
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -50,10 +53,11 @@ func TestUseDataBase(t *testing.T) {
 	)
 
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  "Database changed",
-		CurDB:     DBName(fakedbName),
-		LenDBList: 1,
+		Error:         "None",
+		Terminal:      "Database changed",
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -61,7 +65,7 @@ func TestUseDataBase(t *testing.T) {
 func TestCreateTable(t *testing.T) {
 	fakedbName := "FakeDB"
 	tableName := "TableA"
-	tableColumns := "(name string, score string)"
+	tableColumns := "(name string, score int)"
 
 	got := InitDBAndSendQuery(
 		"CREATE DATABASE "+fakedbName,
@@ -71,13 +75,14 @@ func TestCreateTable(t *testing.T) {
 
 	columns := convertAndSortTBColumns(tableColumns)
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  "Table is Created",
-		CurDB:     DBName(fakedbName),
-		LenDBList: 1,
-		CurTable:  TBName(tableName),
-		lenTable:  0,
-		Columns:   columns,
+		Error:         "None",
+		Terminal:      "Table is Created",
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		CurTable:      TBName(tableName),
+		lenTable:      0,
+		Columns:       columns,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -103,13 +108,14 @@ func TestShowTables(t *testing.T) {
 	terminal := convertAndSortDBNameList(tableNameList)
 	columns := convertAndSortTBColumns(tableColumns[2])
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  terminal,
-		CurDB:     DBName(fakedbName),
-		LenDBList: 1,
-		CurTable:  TBName("TableC"),
-		lenTable:  0,
-		Columns:   columns,
+		Error:         "None",
+		Terminal:      terminal,
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		CurTable:      TBName("TableC"),
+		lenTable:      0,
+		Columns:       columns,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -117,7 +123,7 @@ func TestShowTables(t *testing.T) {
 func TestInsertInto(t *testing.T) {
 	fakedbName := "FakeDB"
 	tableName := "TableA"
-	tableColumns := "(name string, score string)"
+	tableColumns := "(name string, score int)"
 	content := "('Jhon', 316)"
 
 	got := InitDBAndSendQuery(
@@ -129,13 +135,14 @@ func TestInsertInto(t *testing.T) {
 
 	columns := convertAndSortTBColumns(tableColumns)
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  content,
-		CurDB:     DBName(fakedbName),
-		LenDBList: 1,
-		CurTable:  TBName(tableName),
-		lenTable:  1,
-		Columns:   columns,
+		Error:         "None",
+		Terminal:      content,
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		CurTable:      TBName(tableName),
+		lenTable:      1,
+		Columns:       columns,
+		SelectedValue: -1,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -143,7 +150,7 @@ func TestInsertInto(t *testing.T) {
 func TestSelectAll(t *testing.T) {
 	fakedbName := "FakeDB"
 	tableName := "TableA"
-	tableColumns := "(name string, score string)"
+	tableColumns := "(name string, score int)"
 	content := []string{
 		"('A', 316)",
 		"('B', 165)",
@@ -165,13 +172,51 @@ func TestSelectAll(t *testing.T) {
 	termial += "|score|[316, 165, 453]| \n"
 	columns := convertAndSortTBColumns(tableColumns)
 	want := DBMessage{
-		Error:     "None",
-		Terminal:  termial,
-		CurDB:     DBName(fakedbName),
-		LenDBList: 1,
-		CurTable:  TBName(tableName),
-		lenTable:  3,
-		Columns:   columns,
+		Error:         "None",
+		Terminal:      termial,
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		CurTable:      TBName(tableName),
+		lenTable:      3,
+		Columns:       columns,
+		SelectedValue: -1,
+	}
+	checkDBMessage(t, got, want)
+}
+
+func TestSelectElement(t *testing.T) {
+	fakedbName := "FakeDB"
+	tableName := "TableA"
+	tableColumns := "(name string, score int)"
+	content := []string{
+		"('A', 316)",
+		"('B', 165)",
+		"('C', 453)",
+	}
+
+	got := InitDBAndSendQuery(
+		"CREATE DATABASE "+fakedbName,
+		"USE "+fakedbName,
+		"CREATE TABLE "+tableName+" "+tableColumns,
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[0],
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[1],
+		"INSERT INTO "+tableName+tableColumns+" VALUES "+content[2],
+		"SELECT score FROM TableA WHERE name = 'B'",
+	)
+
+	termial := "|columns|contents| \n"
+	termial += "|name|['B']| \n"
+	termial += "|score|[165]| \n"
+	columns := convertAndSortTBColumns(tableColumns)
+	want := DBMessage{
+		Error:         "None",
+		Terminal:      termial,
+		CurDB:         DBName(fakedbName),
+		LenDBList:     1,
+		CurTable:      TBName(tableName),
+		lenTable:      3,
+		Columns:       columns,
+		SelectedValue: 165,
 	}
 	checkDBMessage(t, got, want)
 }
@@ -195,6 +240,7 @@ func checkDBMessage(t *testing.T, got DBMessage, want DBMessage) {
 
 	assertintDifference(t, "LenDBList", got.LenDBList, want.LenDBList)
 	assertintDifference(t, "lenTable", got.lenTable, want.lenTable)
+	assertintDifference(t, "SelectedValue", got.SelectedValue, want.SelectedValue)
 }
 
 func assertStringDifference(t *testing.T, testName string, got string, want string) {
@@ -206,6 +252,12 @@ func assertStringDifference(t *testing.T, testName string, got string, want stri
 func assertintDifference(t *testing.T, testName string, got int, want int) {
 	if got != want {
 		t.Errorf(testName+" : got %q want %q", got, want)
+	}
+}
+
+func assertBoolDifference(t *testing.T, got bool, want bool) {
+	if got != want {
+		t.Errorf("got %t want %t", got, want)
 	}
 }
 

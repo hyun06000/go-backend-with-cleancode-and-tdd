@@ -2,6 +2,7 @@ package fakeDB
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -11,7 +12,8 @@ func SELECT(f *FakeDB, query string) DBMessage {
 	switch {
 	case StartWith_ASTERISK(query):
 		return SELECT_ALL(f, query)
-
+	case StartWith_ALPHABET(query):
+		return SELECT_ELEMENT(f, query)
 	default:
 		return f.DBMsg
 	}
@@ -54,6 +56,37 @@ func SELECT_ALL(f *FakeDB, query string) DBMessage {
 		rtn += ConvertListToString(tmp, cvtArgs) + " \n"
 	}
 	f.DBMsg.Terminal = rtn
+
+	return f.DBMsg
+}
+
+func SELECT_ELEMENT(f *FakeDB, query string) DBMessage {
+	tbName := TBName(GetSplitedWord(query, 2))
+	table := f.MySQL[f.CurrentDB][tbName]
+
+	colName := ColumnName(GetSplitedWord(query, 0))
+	column := table[colName]
+	contents := *column.contentList
+
+	refColName := ColumnName(GetSplitedWord(query, 4))
+	refColumn := table[refColName]
+
+	refElement := GetSplitedWord(query, 6)
+	var targetIndex int
+	for i, element := range *refColumn.contentList {
+		if element == refElement {
+			targetIndex = i
+		}
+	}
+
+	target := contents[targetIndex]
+
+	rtn := "|columns|contents| \n"
+	rtn += "|" + string(refColName) + "|[" + refElement + "]| \n"
+	rtn += "|" + string(colName) + "|[" + target + "]| \n"
+
+	f.DBMsg.Terminal = rtn
+	f.DBMsg.SelectedValue, _ = strconv.Atoi(target)
 
 	return f.DBMsg
 }

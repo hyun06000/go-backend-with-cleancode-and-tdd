@@ -3,6 +3,7 @@ package fakeDB
 import (
 	"sort"
 	"strings"
+	"unicode"
 )
 
 func StartWith_SHOW(query string) bool {
@@ -39,6 +40,10 @@ func StartWith_TABLES(query string) bool {
 
 func StartWith_ASTERISK(query string) bool {
 	return strings.HasPrefix(query, "*")
+}
+
+func StartWith_ALPHABET(query string) bool {
+	return unicode.IsLetter([]rune(query)[0])
 }
 
 func Split(query string, spliter string) []string {

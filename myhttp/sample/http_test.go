@@ -1,4 +1,4 @@
-package myhttp
+package myhttp_sample
 
 import (
 	"net/http"
