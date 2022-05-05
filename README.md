@@ -12,7 +12,7 @@ GO언어를 이용한 서버 빌드와 GO언어가 가진 특성들을 이해하
 코드로 정리하는 것을 목적으로 두고 있습니다.  
 
 ## Code Convention
-[CleanCode에 따른 convention](https://github.com/hyun06000/go-backend-with-cleancode-and-tdd/wiki/CleanCode%EC%97%90-%EB%94%B0%EB%A5%B8-convention)을 통해 CleanCode를 어떻게 리펙토링에 적용하는지 설명합니다.  
+[CleanCode에 따른 convention](https://github.com/hyun06000/go-backend-with-cleancode-and-tdd/wiki/CleanCode%EC%97%90-%EB%94%B0%EB%A5%B8-convention)을 통해 CleanCode를 어떻게 리펙토링에 적용하는지 설명합니다. 현재 `FakeDB`디렉토리의 코드에 적용이 완료되었고 다른 코드들도 리팩토링 중에 있습니다.    
   
 ## Test Driven Development  
 [TDD와 cleancode로 만들면서 배우면서 Golang backend](https://davi06000.tistory.com/137?category=925226) 시리즈를 포스팅하며 테스트를 어떻게 적용하는지 명시합니다.  
