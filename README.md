@@ -22,6 +22,10 @@ Code Climate는 Github Actions로 연동하여 Continuous Integration이 적용�
 ## In-memory Test를 위한 Fake Database Object  
 DB 기능 수행과 관련한 In-memory Test를 구현하기 위해 Fake Database Object를 구현하여 처리합니다. 자세한 내용은 [여기](https://github.com/hyun06000/go-backend-with-cleancode-and-tdd/wiki/%5B-Docs-%5D-FakeDB-module)를 참고해 주시기 바랍니다.  
 
+## MySQL CI  
+Unit-test 뿐만 아니라 MySQL을 이용하여 직접 DB를 올리고 연동하는 통합테스트를 위해 [MySQL GitHub Action](https://github.com/marketplace/actions/setup-mysql#:~:text=MySQL%20v1%20release-,MySQL%20GitHub%20Action,MySQL%2C%20see%20The%20Default%20MySQL.) 를 `workflows`에 추가하여 `git push`가 진행될 때 마다 실재 DB와 연동을 테스트합니다.  
+
+
 ## Reference
 TDD를 통해 서버를 빌드하는 과정은 [Learn Go With Tests](https://quii.gitbook.io/learn-go-with-tests/)를 참고하여 진행합니다.  
 [TDD와 cleancode로 만들면서 배우면서 Golang backend](https://davi06000.tistory.com/137?category=925226) 시리즈를 포스팅하며 자세한 reference와 내용을 기록합니다.
