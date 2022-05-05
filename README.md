@@ -19,7 +19,7 @@ GO언어를 이용한 서버 빌드와 GO언어가 가진 특성들을 이해하
 [Code Climate](https://codeclimate.com/github/hyun06000/go-backend-with-cleancode-and-tdd) 을 통해 Maintainability와 Test Coverage를 기록하고 관리합니다.
 Code Climate는 Github Actions로 연동하여 Continuous Integration이 적용되도록 운영하고 있습니다.  
   
-## In-memory Test를 위한 Fake Database Object  
+## Fake Database Object for In-memory Test  
 DB 기능 수행과 관련한 In-memory Test를 구현하기 위해 Fake Database Object를 구현하여 처리합니다. 자세한 내용은 [여기](https://github.com/hyun06000/go-backend-with-cleancode-and-tdd/wiki/%5B-Docs-%5D-FakeDB-module)를 참고해 주시기 바랍니다.  
 
 ## MySQL CI  
